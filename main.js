@@ -19,8 +19,7 @@
     }, function(stream) {
       video.src = window.URL.createObjectURL(stream);
       video.play();
-      capture();
-
+      denoise();
     }, function(error) {
       alert(error.name || error);
     });
@@ -102,6 +101,31 @@
       }
     }
     current.putImageData(currentData, 0, 0);
+  }
+
+  function denoise () {
+    var count = 0;
+    currentData = current.createImageData(640, 480);
+    var timer = setInterval(function () {
+      background.drawImage(video, 0, 0);
+      backgroundData = background.getImageData(0, 0, 640, 480);
+      count++;
+      if (count <= 1000) {
+
+      } else if (count >= 1000 && count < 1010) {
+        for (var i = 0; i < 480; i++) {
+          for (var j = 0; j < 640; j++) {
+            var k = 4 * (640 * i + j);
+            currentData.data[k + 0] += backgroundData.data[k + 0];
+            currentData.data[k + 0] += backgroundData.data[k + 1];
+            currentData.data[k + 0] += backgroundData.data[k + 2];
+          }
+        }
+      } else if (count >= 1010) {
+        clearInterval(timer);
+        console.log(currentData.data[0]);
+      }
+    }, 0);
   }
 
 })();
