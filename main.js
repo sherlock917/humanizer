@@ -44,9 +44,15 @@
     for (var j = 0; j < 480; j++) {
       for (var i = 0; i < 640; i++) {
         var k = 4 * (640 * j + i);
-        // currentData.data[k + 0] = backgroundData.data[k + 0] > 127 ? 255 : 0;
-        // currentData.data[k + 1] = backgroundData.data[k + 1] > 127 ? 255 : 0;
-        // currentData.data[k + 2] = backgroundData.data[k + 2] > 127 ? 255 : 0;
+
+        // gray scale
+        // var value = backgroundData.data[k + 0] * 0.3 + backgroundData.data[k + 1] * 0.59 + backgroundData.data[k + 2] * 0.11;
+        // currentData.data[k + 0] = value;
+        // currentData.data[k + 1] = value;
+        // currentData.data[k + 2] = value;
+        // currentData.data[k + 3] = 255;
+
+        // black and white
         if (backgroundData.data[k + 0] > 90 ||
           backgroundData.data[k + 1] > 90 ||
           backgroundData.data[k + 2] > 90) {
