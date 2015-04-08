@@ -110,7 +110,7 @@
       background.drawImage(video, 0, 0);
       backgroundData = background.getImageData(0, 0, 640, 480);
       count++;
-      if (count >= 500 && count < 520) {
+      if (count >= 500 && count < 530) {
         for (var i = 0; i < 480; i++) {
           for (var j = 0; j < 640; j++) {
             var k = 4 * (640 * i + j);
@@ -130,14 +130,14 @@
             }
           }
         }
-      } else if (count >= 520) {
+      } else if (count >= 530) {
         clearInterval(timer);
         for (var i = 0; i < 480; i++) {
           for (var j = 0; j < 640; j++) {
             var k = 4 * (640 * i + j);
-            currentData.data[k + 0] = currentData.sum[k + 0] / 20;
-            currentData.data[k + 1] = currentData.sum[k + 1] / 20;
-            currentData.data[k + 2] = currentData.sum[k + 2] / 20;
+            currentData.data[k + 0] = currentData.sum[k + 0] / 30;
+            currentData.data[k + 1] = currentData.sum[k + 1] / 30;
+            currentData.data[k + 2] = currentData.sum[k + 2] / 30;
             currentData.data[k + 3] = 255;
           }
         }
