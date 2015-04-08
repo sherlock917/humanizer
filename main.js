@@ -43,8 +43,8 @@
         currentData.data[k + 1] = 255;
         currentData.data[k + 2] = 255;
         currentData.data[k + 3] = 255;
-        if (Math.abs(hiddenData.data[k + 0] - backgroundData.data[k + 0]) > 50 &&
-          Math.abs(hiddenData.data[k + 1] - backgroundData.data[k + 1]) > 50 &&
+        if (Math.abs(hiddenData.data[k + 0] - backgroundData.data[k + 0]) > 50 ||
+          Math.abs(hiddenData.data[k + 1] - backgroundData.data[k + 1]) > 50 ||
           Math.abs(hiddenData.data[k + 2] - backgroundData.data[k + 2]) > 50) {
           if (unset) {
             start = k;
