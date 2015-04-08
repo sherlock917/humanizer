@@ -19,131 +19,63 @@
     }, function(stream) {
       video.src = window.URL.createObjectURL(stream);
       video.play();
-      denoise();
+      setTimeout(function () {
+        background.drawImage(video, 0, 0);
+        backgroundData = background.getImageData(0, 0, 640, 480);
+        setInterval(detect, 100);
+      }, 3000);
     }, function(error) {
       alert(error.name || error);
     });
-  }
-
-  function capture () {
-    // setTimeout(function () {
-    //   background.drawImage(video, 0, 0);
-    //   backgroundData = background.getImageData(0, 0, 640, 480);
-    //   setInterval(detect, 100);
-    // }, 3000);
-    setInterval(function () {
-      effect();
-    }, 100);
-  }
-
-  function effect () {
-    background.drawImage(video, 0, 0);
-    backgroundData = background.getImageData(0, 0, 640, 480);
-    currentData = current.createImageData(640, 480);
-    for (var j = 0; j < 480; j++) {
-      for (var i = 0; i < 640; i++) {
-        var k = 4 * (640 * j + i);
-
-        // gray scale
-        // var value = backgroundData.data[k + 0] * 0.3 + backgroundData.data[k + 1] * 0.59 + backgroundData.data[k + 2] * 0.11;
-        // currentData.data[k + 0] = value;
-        // currentData.data[k + 1] = value;
-        // currentData.data[k + 2] = value;
-        // currentData.data[k + 3] = 255;
-
-        // black and white
-        if (backgroundData.data[k + 0] > 90 ||
-          backgroundData.data[k + 1] > 90 ||
-          backgroundData.data[k + 2] > 90) {
-          currentData.data[k + 0] = 255;
-          currentData.data[k + 1] = 255;
-          currentData.data[k + 2] = 255;
-        } else {
-          currentData.data[k + 0] = 0;
-          currentData.data[k + 1] = 0;
-          currentData.data[k + 2] = 0;
-        }
-        currentData.data[k + 3] = 255;
-      }
-    }
-    current.putImageData(currentData, 0, 0);
   }
 
   function detect () {
     hidden.drawImage(video, 0, 0);
     hiddenData = hidden.getImageData(0, 0, 640, 480);
     currentData = current.createImageData(640, 480);
-    var flag = true;
-    for (var j = 0; j < 480; j++) {
-      for (var i = 0; i < 640; i++) {
-        var k = 4 * (640 * j + i);
-        currentData.data[k + 0] = hiddenData.data[k + 0];
-        currentData.data[k + 1] = hiddenData.data[k + 1];
-        currentData.data[k + 2] = hiddenData.data[k + 2];
+    var dots = [];
+    var unset = true;
+    var start = end = 0;
+    for (var i = 0; i < 480; i++) {
+      for (var j = 0; j < 640; j++) {
+        var k = 4 * (640 * i + j);
+        currentData.data[k + 0] = 255;
+        currentData.data[k + 1] = 255;
+        currentData.data[k + 2] = 255;
         currentData.data[k + 3] = 255;
-        if (Math.abs(hiddenData.data[k + 0] - backgroundData.data[k + 0]) > 40 &&
-          Math.abs(hiddenData.data[k + 1] - backgroundData.data[k + 1]) > 40 &&
-          Math.abs(hiddenData.data[k + 2] - backgroundData.data[k + 2]) > 40) {
-          if (flag) {
-            currentData.data[k + 0 - 4] = currentData.data[k + 0 - 8] = 0;
-            currentData.data[k + 1 - 4] = currentData.data[k + 1 - 8] = 255;
-            currentData.data[k + 2 - 4] = currentData.data[k + 2 - 8] = 0;
-            flag = false;
+        if (Math.abs(hiddenData.data[k + 0] - backgroundData.data[k + 0]) > 50 &&
+          Math.abs(hiddenData.data[k + 1] - backgroundData.data[k + 1]) > 50 &&
+          Math.abs(hiddenData.data[k + 2] - backgroundData.data[k + 2]) > 50) {
+          if (unset) {
+            start = k;
+            unset = false;
           }
         } else {
-          if (!flag) {
-            currentData.data[k + 0 - 4] = currentData.data[k + 0 - 8] = 0;
-            currentData.data[k + 1 - 4] = currentData.data[k + 1 - 8] = 255;
-            currentData.data[k + 2 - 4] = currentData.data[k + 2 - 8] = 0;
-            flag = true;
+          if (!unset) {
+            end = k;
+            unset = true;
+            if (Math.abs(end - start) > 200) {
+              dots.push({r : start + 0, g : start + 1, b : start + 2});
+              dots.push({r : end + 0, g : end + 1, b : end + 2});
+            }
+            start = end = 0;
           }
         }
       }
     }
+    for (var i in dots) {
+      var dot = dots[i];
+      currentData.data[dot.r] = 0;
+      currentData.data[dot.g] = 255;
+      currentData.data[dot.b] = 0;
+      currentData.data[dot.r - 4] = 0;
+      currentData.data[dot.g - 4] = 255;
+      currentData.data[dot.b - 4] = 0;
+      currentData.data[dot.r - 8] = 0;
+      currentData.data[dot.g - 8] = 255;
+      currentData.data[dot.b - 8] = 0;
+    }
     current.putImageData(currentData, 0, 0);
-  }
-
-  function denoise () {
-    var count = 0;
-    currentData = current.createImageData(640, 480);
-    var timer = setInterval(function () {
-      background.drawImage(video, 0, 0);
-      backgroundData = background.getImageData(0, 0, 640, 480);
-      count++;
-      if (count >= 500 && count < 530) {
-        for (var i = 0; i < 480; i++) {
-          for (var j = 0; j < 640; j++) {
-            var k = 4 * (640 * i + j);
-            if (!currentData.sum) {
-              currentData.sum = [];
-            }
-            if (currentData.sum.length < 640 * 480 * 4) {
-              currentData.sum.push(backgroundData.data[k + 0]);
-              currentData.sum.push(backgroundData.data[k + 1]);
-              currentData.sum.push(backgroundData.data[k + 2]);
-              currentData.sum.push(255);
-            } else {
-              currentData.sum[k + 0] += parseInt(backgroundData.data[k + 0]);
-              currentData.sum[k + 1] += parseInt(backgroundData.data[k + 1]);
-              currentData.sum[k + 2] += parseInt(backgroundData.data[k + 2]);
-              currentData.sum[k + 3] = 255;
-            }
-          }
-        }
-      } else if (count >= 530) {
-        clearInterval(timer);
-        for (var i = 0; i < 480; i++) {
-          for (var j = 0; j < 640; j++) {
-            var k = 4 * (640 * i + j);
-            currentData.data[k + 0] = currentData.sum[k + 0] / 30;
-            currentData.data[k + 1] = currentData.sum[k + 1] / 30;
-            currentData.data[k + 2] = currentData.sum[k + 2] / 30;
-            currentData.data[k + 3] = 255;
-          }
-        }
-        current.putImageData(currentData, 0, 0);
-      }
-    }, 0);
   }
 
 })();
