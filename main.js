@@ -116,14 +116,34 @@
         for (var i = 0; i < 480; i++) {
           for (var j = 0; j < 640; j++) {
             var k = 4 * (640 * i + j);
-            currentData.data[k + 0] += backgroundData.data[k + 0];
-            currentData.data[k + 0] += backgroundData.data[k + 1];
-            currentData.data[k + 0] += backgroundData.data[k + 2];
+            if (!currentData.sum) {
+              currentData.sum = [];
+            }
+            if (currentData.sum.length < 640 * 480 * 4) {
+              currentData.sum.push(backgroundData.data[k + 0]);
+              currentData.sum.push(backgroundData.data[k + 1]);
+              currentData.sum.push(backgroundData.data[k + 2]);
+              currentData.sum.push(255);
+            } else {
+              currentData.sum[k + 0] += parseInt(backgroundData.data[k + 0]);
+              currentData.sum[k + 1] += parseInt(backgroundData.data[k + 1]);
+              currentData.sum[k + 2] += parseInt(backgroundData.data[k + 2]);
+              currentData.sum[k + 3] = 255;
+            }
           }
         }
       } else if (count >= 1010) {
         clearInterval(timer);
-        console.log(currentData.data[0]);
+        for (var i = 0; i < 480; i++) {
+          for (var j = 0; j < 640; j++) {
+            var k = 4 * (640 * i + j);
+            currentData.data[k + 0] = currentData.sum[k + 0] / 10;
+            currentData.data[k + 1] = currentData.sum[k + 1] / 10;
+            currentData.data[k + 2] = currentData.sum[k + 2] / 10;
+            currentData.data[k + 3] = 255;
+          }
+        }
+        current.putImageData(currentData, 0, 0);
       }
     }, 0);
   }
